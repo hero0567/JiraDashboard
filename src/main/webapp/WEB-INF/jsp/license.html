@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF8"></meta>
+	<title>License Generate Page</title>
+	
+	
+	<link href="./skins/polaris/polaris.css" rel="stylesheet">
+	
+	<script src="./js/lib/angular/angular.js"></script>
+	<script src="./js/lib/jquery/jquery.min.js"></script>
+	<script src="./js/lib/icheck/icheck.js"></script>
+	<script src="./js/controller/LicenseController.js"></script>
+	<style type="text/css">
+	
+	.veritas{
+		width: 100px;
+	}
+	
+	.header{
+		color: #7a828b; 
+		font-size: 28px;
+		text-align: center;
+		margin-bottom: 46px;
+    	margin-top: 18px;
+	}
+	
+	.componet{
+		float: left;
+		margin-left: 58px;
+    	margin-top: 7px;
+	   	font-family: cursive;
+	   	color: #7a828b; 
+	   	font-size: 20px;
+	}
+	
+	.appliance{
+		float: left;
+		margin-left: 673px;
+	}
+	.footer{
+		float: left;
+	    margin-top: 300px;
+	    width: 100%;
+	    color: #7a828b; 
+		font-size: 11px;
+		text-align: center;
+	}
+	
+	</style>
+	
+	
+
+</head>
+<body ng-app="app" ng-controller="LicenseController" style = "background: #2c323c none repeat scroll 0 0;">
+   
+   	<div><img class="veritas" src="./img/veritas.jpg"/></div>
+    <div class="header"><span>Appliance License Generate Page</<span></div>
+    
+    <div class="appliance"><img style="width: 284px;" src="./img/appliance.png"/></div>
+    <div class="componet">
+    	<div  style="margin-top: 2px;" ng-repeat="componet in components">
+	    	<span><input type="checkbox" ng-click="chooseComponent(componet)"/></span> 
+	    	<span style="color: #7a828b; font-size: 18px;margin-left: 4px;">{{componet.name}}</<span>
+	    </div>
+	    <div><input type="button" ng-click="generate()" value="Generate" ></input></div>
+	    <div style="margin-top: 8px;float: left;"><span">{{license}}</<span></div>
+    </div>
+    <div class="footer"><span>PROPRIETARY/CONFIDENTIAL - Internal Use Only. Copyright 2016 Veritas Technologies LLC. All rights reserved.</<span></div>
+    
+    
+</body>
+
+</html>
+

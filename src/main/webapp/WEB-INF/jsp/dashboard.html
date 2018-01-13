@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF8"></meta>
+<title>Jira SAFE Dashboard</title>
+
+<link href="./css/bootstrap/bootstrap.min.css" rel="stylesheet"/>
+<script src="./js/lib/jquery/jquery.min.js"></script>
+<script src="./js/lib/bootstrap/bootstrap.min.js"></script>
+<script src="./js/lib/angular/angular.js"></script>
+<script src="./js/controller/DashboardController.js"></script>
+
+<style type="text/css">
+
+	html,body{
+	    height: 100%;/*设置html和body的width和height为100%，可使全屏生效*/
+	    width: 100%;
+	}
+	
+	.EpProgress {background-color: Yellow }
+	.EpClosed {background-color: CornflowerBlue }
+	
+	.Closed{color: CornflowerBlue}
+	.blue {background-color: CornflowerBlue }	
+	.green {background-color: ForestGreen }
+	.yellow {background-color: Yellow }
+	p {margin-left: 20px}
+	.table{
+		width : 98%;
+		margin : 10px;
+		
+	}
+	.td {
+	    border: 1px solid #ddd;
+	    float: left;
+	    height: 26px;
+	    line-height: 26px;
+	    text-align: center;
+	    width: 100px;
+	    margin-left: -1px;
+	}
+	.tr {
+	    margin-bottom: -1px;
+    	overflow: auto;
+	}
+	
+	.veritas{
+		width: 100px;
+	}
+	
+	.footer{
+		float: left;
+	    margin-top: 300px;
+	    width: 100%;
+	    color: #7a828b; 
+		font-size: 11px;
+		text-align: center;
+	}
+	
+	.round {
+	   border: 1px solid #b1181e;
+	    border-radius: 20px;
+	    height: 23px;
+	    padding-left: 12px;
+	    width: 70px;	
+	    cursor: pointer;    
+	    background-color: #b1181e;
+	    color: white;
+	    font-size: 13px;
+	    font-weight: bold;
+	}
+	
+	.menu{
+		width : 98%;
+		margin-left: 12px;
+    	margin-top: 14px;
+    	border: 1px solid #dedede;
+    	border-radius: 5px;
+    	height: 36px;
+    	background-color: #b1181e;
+	}
+	
+	#dropdownMenu1{
+		margin-left: 12px;
+		background-color: #b1181e;
+	}
+	
+	.menuitem{
+		width : 100px;
+	}
+	
+	.menufont{
+		color: white;
+		font-size: 13px;
+    	font-weight: bold;
+	}
+	
+</style>
+</head>
+<body ng-app="app" ng-controller="DashboardController">
+	<div style="margin-left: 12px;margin-top: 15px;"><img class="veritas" src="./img/veritas.jpg"/></div>
+	<div class="menu">
+	  	<div class="dropdown" style="float: left;">
+		   <button type="button" class="btn dropdown-toggle menufont" id="dropdownMenu1" 
+		      data-toggle="dropdown">Trains
+		      <span class="caret"></span>
+		   </button>
+		   <ul class="dropdown-menu pull-right menuitem" role="menu" 
+		      aria-labelledby="dropdownMenu1">
+		      <li role="presentation" ng-repeat="t in trains">
+		         <a role="menuitem" tabindex="-1" href="#" ng-click="changetrain(t)">{{t}}</a>
+		      </li>
+		   </ul>
+		</div>
+		<div class="dropdown" style="float: left;">		   
+		    <button type="button" class="btn dropdown-toggle menufont" id="dropdownMenu1" 
+		      data-toggle="dropdown">Export
+		      <span class="caret"></span>
+		   </button>
+		   <ul class="dropdown-menu pull-right menuitem" role="menu" 
+		      aria-labelledby="dropdownMenu1">
+		      <li role="presentation">
+		         <a role="menuitem" tabindex="-1" href="#">Export To Excel</a>
+		      </li>
+		      <li role="presentation">
+		         <a role="menuitem" tabindex="-1" href="#">Get PI Assessment</a>
+		      </li>
+		      <li role="presentation">
+		         <a role="menuitem" tabindex="-1" href="#">...</a>
+		      </li>
+		   </ul>
+		</div>
+	</div>
+	<div>
+		<table class="table table-bordered">
+		   <tbody>
+			   <tr >
+		         <td colspan="8" class="red">
+		         	    <div class="round" style ="float: left;" ng-click="changepi(-1)">
+					      << {{pis[piindex - 1]}}
+					    </div>
+					    <div style= "float: left;width: 90%;text-align: center;font-size: 18px;font-weight: bold;"> {{pis[piindex]}} {{train}} Program Board</div>
+					      
+					    <div class="round" style ="float: right;" ng-click="changepi(1)">
+					      {{pis[piindex + 1]}} >>
+					    </div>
+		         </td>
+		      </tr>
+		      <tr style ="text-align: center;font-size: 14px;font-weight: bold;">
+		         <td style="border-top-width: 3px;border-top-color: #b1181e;">Team Name</td>
+		         <td style="border-top-width: 3px;border-top-color: #b1181e;width:18%;">Sprint 1</td>
+				 <td style="border-top-width: 3px;border-top-color: #b1181e;width:18%;">Sprint 2</td>
+				 <td style="border-top-width: 3px;border-top-color: #b1181e;width:18%;">Sprint 3</td>
+				 <td style="border-top-width: 3px;border-top-color: #b1181e;width:18%;">Sprint 4</td>
+				 <td style="border-top-width: 3px;border-top-color: #b1181e;width:18%;">Sprint 5</td>
+				 <td style="border-top-width: 3px;border-top-color: #b1181e;">IP</td>
+		      </tr>
+		   </tbody> 
+		   <tbody ng-show="platform">		      
+		      <!-- Dota -->
+		      <tr ng-repeat="epic in dota.epics">
+		         <td rowspan="{{dota.epics.length}}" ng-if="$index = $first">Dota
+		         	<div><img src="./img/Dota-All-Stars.jpg" width="100" height="100"/></div>
+		         	<span ng-repeat="person in teaminfo.dota">{{person.title}}: <a href="Mailto:{{person.email}}">{{person.name}}</a><br></span>
+		         </td>
+		         
+		         <!-- Epic -->
+		         <td ng-if="$parent.$even" ng-repeat="n in [].constructor(epic.start - 1) track by $index"></td>
+		         <td ng-if="$even" colspan="{{epic.end - epic.start + 1}}">
+		         	<div class="progress">
+					  <div class="progress-bar" role="progressbar" aria-valuenow="{{finished / total}}" aria-valuemin="0" aria-valuemax="100" ng-style="progressStyle(epic)">
+					    <span style="float: left;padding-left: 6px;padding-top: 2px;"><img src="./img/ico_epic.png" alt="EP:"/>{{epic.name}}   {{epic.summary}}</span><span style="float: right;padding-right: 6px; padding-top: 2px;">{{progress(epic) + "%"}}</span>
+					  </div>
+					</div>
+		         </td>
+		         
+		         <!-- US -->
+		         <td ng-if="$parent.$even" ng-repeat="n in [].constructor(5 - epic.end + 1) track by $index"></td>
+		         
+		         <td ng-if="$parent.$odd" ng-repeat="n in [].constructor(epic.start - 1) track by $index"></td>
+		         <td ng-if="$parent.$odd" ng-repeat="sp in epic.sprint">
+		         		<div ng-repeat="us in sp.userStories" ng-class="us.status">
+		         			<a target="_blank" href="{{issue_link_prefix}}{{us.name}}">
+		         				<img src="./img/ico_story.png" alt="US:"/><span ng-style="statusStyle(us.status)">{{us.name}}</span>
+		         			</a><span style="color:black;cursor: default;" title="{{us.summary}}">{{us.summary | limitTo : 25}}</span>
+		         		</div>
+		         </td>
+		         <td ng-if="$parent.$odd" ng-repeat="n in [].constructor(5 - epic.end + 1) track by $index"></td>
+		      </tr>		      
+		      <tr style="background-color:#FFF0AC;">
+		         <td>Outwards Dependencies</td>
+		         <td ng-repeat="sprint in dota.depOutSps">
+		         	<div ng-repeat="us in sprint.dependencies" ng-class="us.status"> 
+		         		<div><span>[{{us.us.component}}]</span>
+		         			<a target="_blank" href="{{issue_link_prefix}}{{us.us.name}}">
+		         				<img src="./img/ico_story.png" alt="US:"/><span ng-style="statusStyle(us.us.status)">{{us.us.name}}</span>
+		         			</a><span style="color:black;cursor: default;" title="{{us.us.summary}}">{{us.us.summary | limitTo : 15}}</span>
+		         		</div>
+		         		<div>
+		         			 -> <span>[{{us.component}}]</span> <a target="_blank" href="{{issue_link_prefix}}{{us.name}}">
+		         				<img src="./img/ico_story.png" alt="US:"/><span ng-style="statusStyle(us.status)">{{us.name}}</span>
+		         			</a><span style="color:black;cursor: default;" title="{{us.summary}}">{{us.summary | limitTo : 8}}</span>
+		         			<img src="./img/no.jpg"/>
+		         		</div>
+	         		</div>
+		         </td>
+		         <td></td>
+		      </tr>
+		      <tr style="background-color:#FFF0AC;">
+		         <td>Inwards Dependencies</td>
+		         <td ng-repeat="sprint in dota.depInSps">
+		         	<div ng-repeat="us in sprint.dependencies" ng-class="us.status"> 
+	         			<div><span>[{{us.component}}]</span>
+		         			<a target="_blank" href="{{issue_link_prefix}}{{us.name}}">
+		         				<img src="./img/ico_story.png" alt="US:"/><span ng-style="statusStyle(us.status)">{{us.name}}</span>
+		         			</a><span style="color:black;cursor: default;" title="{{us.summary}}">{{us.summary | limitTo : 15}}</span>
+		         		</div>
+		         		<div>
+		         			 -> <span>[{{us.us.component}}]</span> <a target="_blank" href="{{issue_link_prefix}}{{us.us.name}}">
+		         				<img src="./img/ico_story.png" alt="US:"/><span ng-style="statusStyle(us.us.status)">{{us.us.name}}</span>
+		         			</a><span style="color:black;cursor: default;" title="{{us.us.summary}}">{{us.us.summary | limitTo : 8}}</span>
+		         			<img src="./img/yes.jpg"/>
+		         		</div>
+	         		</div>
+		         </td>
+		         <td></td>
+		      </tr>
+		      <tr>
+		         <td style="border-bottom-width: 3px;border-bottom-color: #b1181e;">Comments</td>
+		         <td style="border-bottom-width: 3px;border-bottom-color: #b1181e;">
+		         	<div>APPSOL-27183 have some risk</div>
+		         	<div>APPSOL-27184 .....</div>
+		         	<div>APPSOL-27185 .....</div>
+		         	<div><input type="button" value="Add Comments"/></div>
+		         </td>
+				 <td style="border-bottom-width: 3px;border-bottom-color: #b1181e;"></td>
+				 <td style="border-bottom-width: 3px;border-bottom-color: #b1181e;"></td>
+				 <td style="border-bottom-width: 3px;border-bottom-color: #b1181e;"></td>
+				 <td style="border-bottom-width: 3px;border-bottom-color: #b1181e;"></td>
+				 <td style="border-bottom-width: 3px;border-bottom-color: #b1181e;"></td>
+		      </tr>
+	       </tbody> 
+	       
+	       
+		   <!-- Halo -->
+	       <tbody ng-show="platform">		      
+		      <tr ng-repeat="epic in halo.epics">
+		         <td rowspan="{{halo.epics.length}}" ng-if="$index = $first">Halo
+		         	<div><img src="./img/halo.png" width="100" height="100"/></div>
+		         	<span ng-repeat="person in teaminfo.halo">{{person.title}}: <a href="Mailto:{{person.email}}">{{person.name}}</a><br></span>
+		         </td>
+		         
+		         <!-- Epic -->
+		         <td ng-if="$parent.$even" ng-repeat="n in [].constructor(epic.start - 1) track by $index"></td>
+		         <td ng-if="$even" colspan="{{epic.end - epic.start + 1}}">
+		         	<div class="progress">
+					  <div class="progress-bar" role="progressbar" aria-valuenow="{{finished / total}}" aria-valuemin="0" aria-valuemax="100" ng-style="progressStyle(epic)">
+					    <span style="float: left;padding-left: 6px;padding-top: 2px;"><img src="./img/ico_epic.png" alt="EP:"/>{{epic.name}}   {{epic.summary}}</span><span style="float: right;padding-right: 6px; padding-top: 2px;">{{progress(epic) + "%"}}</span>
+					  </div>
+					</div>
+		         </td>
+		         
+		         <!-- US -->
+		         <td ng-if="$parent.$even" ng-repeat="n in [].constructor(5 - epic.end + 1) track by $index"></td>
+		         
+		         <td ng-if="$parent.$odd" ng-repeat="n in [].constructor(epic.start - 1) track by $index"></td>
+		         <td ng-if="$parent.$odd" ng-repeat="sp in epic.sprint">
+		         		<div ng-repeat="us in sp.userStories" ng-class="us.status">
+		         			<a target="_blank" href="{{issue_link_prefix}}{{us.name}}">
+		         				<img src="./img/ico_story.png" alt="US:"/><span ng-style="statusStyle(us.status)">{{us.name}}</span>
+		         			</a><span style="color:black;cursor: default;" title="{{us.summary}}">{{us.summary | limitTo : 25}}</span>
+		         		</div>
+		         </td>
+		         <td ng-if="$parent.$odd" ng-repeat="n in [].constructor(5 - epic.end + 1) track by $index"></td>
+		      </tr>		      
+		      <tr style="background-color:#FFF0AC;">
+		         <td>Outwards Dependencies</td>
+		         <td ng-repeat="sprint in halo.depOutSps">
+		         	<div ng-repeat="us in sprint.dependencies" ng-class="us.status"> 
+		         		<div><span>[{{us.us.component}}]</span>
+		         			<a target="_blank" href="{{issue_link_prefix}}{{us.us.name}}">
+		         				<img src="./img/ico_story.png" alt="US:"/><span ng-style="statusStyle(us.us.status)">{{us.us.name}}</span>
+		         			</a><span style="color:black;cursor: default;" title="{{us.us.summary}}">{{us.us.summary | limitTo : 15}}</span>
+		         		</div>
+		         		<div>
+		         			 -> <span>[{{us.component}}]</span> <a target="_blank" href="{{issue_link_prefix}}{{us.name}}">
+		         				<img src="./img/ico_story.png" alt="US:"/><span ng-style="statusStyle(us.status)">{{us.name}}</span>
+		         			</a><span style="color:black;cursor: default;" title="{{us.summary}}">{{us.summary | limitTo : 8}}</span>
+		         			<img src="./img/no.jpg"/>
+		         		</div>
+	         		</div>
+		         </td>
+		         <td></td>
+		      </tr>
+		      <tr style="background-color:#FFF0AC;">
+		         <td>Inwards Dependencies</td>
+		         <td ng-repeat="sprint in halo.depInSps">
+		         	<div ng-repeat="us in sprint.dependencies" ng-class="us.status"> 
+	         			<div><span>[{{us.component}}]</span>
+		         			<a target="_blank" href="{{issue_link_prefix}}{{us.name}}">
+		         				<img src="./img/ico_story.png" alt="US:"/><span ng-style="statusStyle(us.status)">{{us.name}}</span>
+		         			</a><span style="color:black;cursor: default;" title="{{us.summary}}">{{us.summary | limitTo : 15}}</span>
+		         		</div>
+		         		<div>
+		         			 -> <span>[{{us.us.component}}]</span> <a target="_blank" href="{{issue_link_prefix}}{{us.us.name}}">
+		         				<img src="./img/ico_story.png" alt="US:"/><span ng-style="statusStyle(us.us.status)">{{us.us.name}}</span>
+		         			</a><span style="color:black;cursor: default;" title="{{us.us.summary}}">{{us.us.summary | limitTo : 8}}</span>
+		         			<img src="./img/yes.jpg"/>
+		         		</div>
+	         		</div>
+		         </td>
+		         <td></td>
+		      </tr>
+		      <tr>
+		         <td style="border-bottom-width: 3px;border-bottom-color: #b1181e;">Comments</td>
+		         <td style="border-bottom-width: 3px;border-bottom-color: #b1181e;">
+		         	<div>APPSOL-27183 have some risk</div>
+		         	<div>APPSOL-27184 .....</div>
+		         	<div>APPSOL-27185 .....</div>
+		         	<div><input type="button" value="Add Comments"/></div>
+		         </td>
+				 <td style="border-bottom-width: 3px;border-bottom-color: #b1181e;"></td>
+				 <td style="border-bottom-width: 3px;border-bottom-color: #b1181e;"></td>
+				 <td style="border-bottom-width: 3px;border-bottom-color: #b1181e;"></td>
+				 <td style="border-bottom-width: 3px;border-bottom-color: #b1181e;"></td>
+				 <td style="border-bottom-width: 3px;border-bottom-color: #b1181e;"></td>
+		      </tr>
+	       </tbody>
+	       
+	       
+	       <!-- Ghostbusters -->
+	       <tbody ng-show="platform">		      
+		      <tr ng-repeat="epic in ghostbusters.epics">
+		         <td rowspan="{{ghostbusters.epics.length}}" ng-if="$index = $first">Ghostbusters
+		         	<div><img src="./img/Ghostbusters.png" width="100" height="100"/></div>
+		         	<span ng-repeat="person in teaminfo.ghostbusters">{{person.title}}: <a href="Mailto:{{person.email}}">{{person.name}}</a><br></span>
+		         </td>
+		         
+		         <!-- Epic -->
+		         <td ng-if="$parent.$even" ng-repeat="n in [].constructor(epic.start - 1) track by $index"></td>
+		         <td ng-if="$even" colspan="{{epic.end - epic.start + 1}}">
+		         	<div class="progress">
+					  <div class="progress-bar" role="progressbar" aria-valuenow="{{finished / total}}" aria-valuemin="0" aria-valuemax="100" ng-style="progressStyle(epic)">
+					    <span style="float: left;padding-left: 6px;padding-top: 2px;"><img src="./img/ico_epic.png" alt="EP:"/>{{epic.name}}   {{epic.summary}}</span><span style="float: right;padding-right: 6px; padding-top: 2px;">{{progress(epic) + "%"}}</span>
+					  </div>
+					</div>
+		         </td>
+		         
+		         <!-- US -->
+		         <td ng-if="$parent.$even" ng-repeat="n in [].constructor(5 - epic.end + 1) track by $index"></td>
+		         
+		         <td ng-if="$parent.$odd" ng-repeat="n in [].constructor(epic.start - 1) track by $index"></td>
+		         <td ng-if="$parent.$odd" ng-repeat="sp in epic.sprint">
+		         		<div ng-repeat="us in sp.userStories" ng-class="us.status">
+		         			<a target="_blank" href="{{issue_link_prefix}}{{us.name}}">
+		         				<img src="./img/ico_story.png" alt="US:"/><span ng-style="statusStyle(us.status)">{{us.name}}</span>
+		         			</a><span style="color:black;cursor: default;" title="{{us.summary}}">{{us.summary | limitTo : 25}}</span>
+		         		</div>
+		         </td>
+		         <td ng-if="$parent.$odd" ng-repeat="n in [].constructor(5 - epic.end + 1) track by $index"></td>
+		      </tr>		      
+		      <tr style="background-color:#FFF0AC;">
+		         <td>Outwards Dependencies</td>
+		         <td ng-repeat="sprint in ghostbusters.depOutSps">
+		         	<div ng-repeat="us in sprint.dependencies" ng-class="us.status"> 
+		         		<div><span>[{{us.us.component}}]</span>
+		         			<a target="_blank" href="{{issue_link_prefix}}{{us.us.name}}">
+		         				<img src="./img/ico_story.png" alt="US:"/><span ng-style="statusStyle(us.us.status)">{{us.us.name}}</span>
+		         			</a><span style="color:black;cursor: default;" title="{{us.us.summary}}">{{us.us.summary | limitTo : 15}}</span>
+		         		</div>
+		         		<div>
+		         			 -> <span>[{{us.component}}]</span> <a target="_blank" href="{{issue_link_prefix}}{{us.name}}">
+		         				<img src="./img/ico_story.png" alt="US:"/><span ng-style="statusStyle(us.status)">{{us.name}}</span>
+		         			</a><span style="color:black;cursor: default;" title="{{us.summary}}">{{us.summary | limitTo : 8}}</span>
+		         			<img src="./img/no.jpg"/>
+		         		</div>
+	         		</div>
+		         </td>
+		         <td></td>
+		      </tr>
+		      <tr style="background-color:#FFF0AC;">
+		         <td>Inwards Dependencies</td>
+		         <td ng-repeat="sprint in ghostbusters.depInSps">
+		         	<div ng-repeat="us in sprint.dependencies" ng-class="us.status"> 
+	         			<div><span>[{{us.component}}]</span>
+		         			<a target="_blank" href="{{issue_link_prefix}}{{us.name}}">
+		         				<img src="./img/ico_story.png" alt="US:"/><span ng-style="statusStyle(us.status)">{{us.name}}</span>
+		         			</a><span style="color:black;cursor: default;" title="{{us.summary}}">{{us.summary | limitTo : 15}}</span>
+		         		</div>
+		         		<div>
+		         			 -> <span>[{{us.us.component}}]</span> <a target="_blank" href="{{issue_link_prefix}}{{us.us.name}}">
+		         				<img src="./img/ico_story.png" alt="US:"/><span ng-style="statusStyle(us.us.status)">{{us.us.name}}</span>
+		         			</a><span style="color:black;cursor: default;" title="{{us.us.summary}}">{{us.us.summary | limitTo : 8}}</span>
+		         			<img src="./img/yes.jpg"/>
+		         		</div>
+	         		</div>
+		         </td>
+		         <td></td>
+		      </tr>
+		      <tr>
+		         <td style="border-bottom-width: 3px;border-bottom-color: #b1181e;">Comments</td>
+		         <td style="border-bottom-width: 3px;border-bottom-color: #b1181e;">
+		         	<div>APPSOL-27183 have some risk</div>
+		         	<div>APPSOL-27184 .....</div>
+		         	<div>APPSOL-27185 .....</div>
+		         	<div><input type="button" value="Add Comments"/></div>
+		         </td>
+				 <td style="border-bottom-width: 3px;border-bottom-color: #b1181e;"></td>
+				 <td style="border-bottom-width: 3px;border-bottom-color: #b1181e;"></td>
+				 <td style="border-bottom-width: 3px;border-bottom-color: #b1181e;"></td>
+				 <td style="border-bottom-width: 3px;border-bottom-color: #b1181e;"></td>
+				 <td style="border-bottom-width: 3px;border-bottom-color: #b1181e;"></td>
+		      </tr>
+	       </tbody>
+	       
+	       <!-- Goku -->
+	       <tbody ng-show="platform">		      
+		      <tr ng-repeat="epic in goku.epics">
+		         <td rowspan="{{goku.epics.length}}" ng-if="$index = $first">Goku
+		         	<div><img src="./img/ico_goku.jpg" width="100" height="100"/></div>
+		         	<span ng-repeat="person in teaminfo.goku">{{person.title}}: <a href="Mailto:{{person.email}}">{{person.name}}</a><br></span>
+		         </td>
+		         
+		         <!-- Epic -->
+		         <td ng-if="$parent.$even" ng-repeat="n in [].constructor(epic.start - 1) track by $index"></td>
+		         <td ng-if="$even" colspan="{{epic.end - epic.start + 1}}">
+		         	<div class="progress">
+					  <div class="progress-bar" role="progressbar" aria-valuenow="{{finished / total}}" aria-valuemin="0" aria-valuemax="100" ng-style="progressStyle(epic)">
+					    <span style="float: left;padding-left: 6px;padding-top: 2px;"><img src="./img/ico_epic.png" alt="EP:"/>{{epic.name}}   {{epic.summary}}</span><span style="float: right;padding-right: 6px; padding-top: 2px;">{{progress(epic) + "%"}}</span>
+					  </div>
+					</div>
+		         </td>
+		         
+		         <!-- US -->
+		         <td ng-if="$parent.$even" ng-repeat="n in [].constructor(5 - epic.end + 1) track by $index"></td>
+		         
+		         <td ng-if="$parent.$odd" ng-repeat="n in [].constructor(epic.start - 1) track by $index"></td>
+		         <td ng-if="$parent.$odd" ng-repeat="sp in epic.sprint">
+		         		<div ng-repeat="us in sp.userStories" ng-class="us.status">
+		         			<a target="_blank" href="{{issue_link_prefix}}{{us.name}}">
+		         				<img src="./img/ico_story.png" alt="US:"/><span ng-style="statusStyle(us.status)">{{us.name}}</span>
+		         			</a><span style="color:black;cursor: default;" title="{{us.summary}}">{{us.summary | limitTo : 25}}</span>
+		         		</div>
+		         </td>
+		         <td ng-if="$parent.$odd" ng-repeat="n in [].constructor(5 - epic.end + 1) track by $index"></td>
+		      </tr>		      
+		      <tr style="background-color:#FFF0AC;">
+		         <td>Outwards Dependencies</td>
+		         <td ng-repeat="sprint in goku.depOutSps">
+		         	<div ng-repeat="us in sprint.dependencies" ng-class="us.status"> 
+		         		<div><span>[{{us.us.component}}]</span>
+		         			<a target="_blank" href="{{issue_link_prefix}}{{us.us.name}}">
+		         				<img src="./img/ico_story.png" alt="US:"/><span ng-style="statusStyle(us.us.status)">{{us.us.name}}</span>
+		         			</a><span style="color:black;cursor: default;" title="{{us.us.summary}}">{{us.us.summary | limitTo : 15}}</span>
+		         		</div>
+		         		<div>
+		         			 -> <span>[{{us.component}}]</span> <a target="_blank" href="{{issue_link_prefix}}{{us.name}}">
+		         				<img src="./img/ico_story.png" alt="US:"/><span ng-style="statusStyle(us.status)">{{us.name}}</span>
+		         			</a><span style="color:black;cursor: default;" title="{{us.summary}}">{{us.summary | limitTo : 8}}</span>
+		         			<img src="./img/no.jpg"/>
+		         		</div>
+	         		</div>
+		         </td>
+		         <td></td>
+		      </tr>
+		      <tr style="background-color:#FFF0AC;">
+		         <td>Inwards Dependencies</td>
+		         <td ng-repeat="sprint in goku.depInSps">
+		         	<div ng-repeat="us in sprint.dependencies" ng-class="us.status"> 
+	         			<div><span>[{{us.component}}]</span>
+		         			<a target="_blank" href="{{issue_link_prefix}}{{us.name}}">
+		         				<img src="./img/ico_story.png" alt="US:"/><span ng-style="statusStyle(us.status)">{{us.name}}</span>
+		         			</a><span style="color:black;cursor: default;" title="{{us.summary}}">{{us.summary | limitTo : 15}}</span>
+		         		</div>
+		         		<div>
+		         			 -> <span>[{{us.us.component}}]</span> <a target="_blank" href="{{issue_link_prefix}}{{us.us.name}}">
+		         				<img src="./img/ico_story.png" alt="US:"/><span ng-style="statusStyle(us.us.status)">{{us.us.name}}</span>
+		         			</a><span style="color:black;cursor: default;" title="{{us.us.summary}}">{{us.us.summary | limitTo : 8}}</span>
+		         			<img src="./img/yes.jpg"/>
+		         		</div>
+	         		</div>
+		         </td>
+		         <td></td>
+		      </tr>
+		      <tr>
+		         <td style="border-bottom-width: 3px;border-bottom-color: #b1181e;">Comments</td>
+		         <td style="border-bottom-width: 3px;border-bottom-color: #b1181e;">
+		         	<div>APPSOL-27183 have some risk</div>
+		         	<div>APPSOL-27184 .....</div>
+		         	<div>APPSOL-27185 .....</div>
+		         	<div><input type="button" value="Add Comments"/></div>
+		         </td>
+				 <td style="border-bottom-width: 3px;border-bottom-color: #b1181e;"></td>
+				 <td style="border-bottom-width: 3px;border-bottom-color: #b1181e;"></td>
+				 <td style="border-bottom-width: 3px;border-bottom-color: #b1181e;"></td>
+				 <td style="border-bottom-width: 3px;border-bottom-color: #b1181e;"></td>
+				 <td style="border-bottom-width: 3px;border-bottom-color: #b1181e;"></td>
+		      </tr>
+	       </tbody>
+	       
+	       <!-- Matrix -->
+	       <tbody ng-show="autosupport">		      
+		      <tr ng-repeat="epic in matrix.epics">
+		         <td rowspan="{{matrix.epics.length}}" ng-if="$index = $first">Matrix
+		         	<div><img src="./img/Matrix.jpg" width="100" height="100"/></div>
+		         	<span ng-repeat="person in teaminfo.matrix">{{person.title}}: <a href="Mailto:{{person.email}}">{{person.name}}</a><br></span>
+		         </td>
+		         
+		         <!-- Epic -->
+		         <td ng-if="$parent.$even" ng-repeat="n in [].constructor(epic.start - 1) track by $index"></td>
+		         <td ng-if="$even" colspan="{{epic.end - epic.start + 1}}">
+		         	<div class="progress">
+					  <div class="progress-bar" role="progressbar" aria-valuenow="{{finished / total}}" aria-valuemin="0" aria-valuemax="100" ng-style="progressStyle(epic)">
+					    <span style="float: left;padding-left: 6px;padding-top: 2px;"><img src="./img/ico_epic.png" alt="EP:"/>{{epic.name}}   {{epic.summary}}</span><span style="float: right;padding-right: 6px; padding-top: 2px;">{{progress(epic) + "%"}}</span>
+					  </div>
+					</div>
+		         </td>
+		         
+		         <!-- US -->
+		         <td ng-if="$parent.$even" ng-repeat="n in [].constructor(5 - epic.end + 1) track by $index"></td>
+		         
+		         <td ng-if="$parent.$odd" ng-repeat="n in [].constructor(epic.start - 1) track by $index"></td>
+		         <td ng-if="$parent.$odd" ng-repeat="sp in epic.sprint">
+		         		<div ng-repeat="us in sp.userStories" ng-class="us.status">
+		         			<a target="_blank" href="{{issue_link_prefix}}{{us.name}}">
+		         				<img src="./img/ico_story.png" alt="US:"/><span ng-style="statusStyle(us.status)">{{us.name}}</span>
+		         			</a><span style="color:black;cursor: default;" title="{{us.summary}}">{{us.summary | limitTo : 25}}</span>
+		         		</div>
+		         </td>
+		         <td ng-if="$parent.$odd" ng-repeat="n in [].constructor(5 - epic.end + 1) track by $index"></td>
+		      </tr>		      
+		      <tr style="background-color:#FFF0AC;">
+		         <td>Outwards Dependencies</td>
+		         <td ng-repeat="sprint in matrix.depOutSps">
+		         	<div ng-repeat="us in sprint.dependencies" ng-class="us.status"> 
+		         		<div><span>[{{us.us.component}}]</span>
+		         			<a target="_blank" href="{{issue_link_prefix}}{{us.us.name}}">
+		         				<img src="./img/ico_story.png" alt="US:"/><span ng-style="statusStyle(us.us.status)">{{us.us.name}}</span>
+		         			</a><span style="color:black;cursor: default;" title="{{us.us.summary}}">{{us.us.summary | limitTo : 15}}</span>
+		         		</div>
+		         		<div>
+		         			 -> <span>[{{us.component}}]</span> <a target="_blank" href="{{issue_link_prefix}}{{us.name}}">
+		         				<img src="./img/ico_story.png" alt="US:"/><span ng-style="statusStyle(us.status)">{{us.name}}</span>
+		         			</a><span style="color:black;cursor: default;" title="{{us.summary}}">{{us.summary | limitTo : 8}}</span>
+		         			<img src="./img/no.jpg"/>
+		         		</div>
+	         		</div>
+		         </td>
+		         <td></td>
+		      </tr>
+		      <tr style="background-color:#FFF0AC;">
+		         <td>Inwards Dependencies</td>
+		         <td ng-repeat="sprint in matrix.depInSps">
+		         	<div ng-repeat="us in sprint.dependencies" ng-class="us.status"> 
+	         			<div><span>[{{us.component}}]</span>
+		         			<a target="_blank" href="{{issue_link_prefix}}{{us.name}}">
+		         				<img src="./img/ico_story.png" alt="US:"/><span ng-style="statusStyle(us.status)">{{us.name}}</span>
+		         			</a><span style="color:black;cursor: default;" title="{{us.summary}}">{{us.summary | limitTo : 15}}</span>
+		         		</div>
+		         		<div>
+		         			 -> <span>[{{us.us.component}}]</span> <a target="_blank" href="{{issue_link_prefix}}{{us.us.name}}">
+		         				<img src="./img/ico_story.png" alt="US:"/><span ng-style="statusStyle(us.us.status)">{{us.us.name}}</span>
+		         			</a><span style="color:black;cursor: default;" title="{{us.us.summary}}">{{us.us.summary | limitTo : 8}}</span>
+		         			<img src="./img/yes.jpg"/>
+		         		</div>
+	         		</div>
+		         </td>
+		         <td></td>
+		      </tr>
+		      <tr>
+		         <td style="border-bottom-width: 3px;border-bottom-color: #b1181e;">Comments</td>
+		         <td style="border-bottom-width: 3px;border-bottom-color: #b1181e;">
+		         	<div>APPSOL-27183 have some risk</div>
+		         	<div>APPSOL-27184 .....</div>
+		         	<div>APPSOL-27185 .....</div>
+		         	<div><input type="button" value="Add Comments"/></div>
+		         </td>
+				 <td style="border-bottom-width: 3px;border-bottom-color: #b1181e;"></td>
+				 <td style="border-bottom-width: 3px;border-bottom-color: #b1181e;"></td>
+				 <td style="border-bottom-width: 3px;border-bottom-color: #b1181e;"></td>
+				 <td style="border-bottom-width: 3px;border-bottom-color: #b1181e;"></td>
+				 <td style="border-bottom-width: 3px;border-bottom-color: #b1181e;"></td>
+		      </tr>
+	       </tbody>
+	       
+	       <!-- ​​​Aladdin -->
+	       <tbody ng-show="autosupport">	
+		      <tr ng-repeat="epic in lal.epics">
+		         <td rowspan="{{lal.epics.length}}" ng-if="$index = $first">Aladdin
+		         	<div><img src="./img/​​​Aladdin.png" width="100" height="100"/></div>
+		         	<span ng-repeat="person in teaminfo.lal">{{person.title}}: <a href="Mailto:{{person.email}}">{{person.name}}</a><br></span>
+		         </td>
+		         
+		         <!-- Epic -->
+		         <td ng-if="$parent.$even" ng-repeat="n in [].constructor(epic.start - 1) track by $index"></td>
+		         <td ng-if="$even" colspan="{{epic.end - epic.start + 1}}">
+		         	<div class="progress">
+					  <div class="progress-bar" role="progressbar" aria-valuenow="{{finished / total}}" aria-valuemin="0" aria-valuemax="100" ng-style="progressStyle(epic)">
+					    <span style="float: left;padding-left: 6px;padding-top: 2px;"><img src="./img/ico_epic.png" alt="EP:"/>{{epic.name}}   {{epic.summary}}</span><span style="float: right;padding-right: 6px; padding-top: 2px;">{{progress(epic) + "%"}}</span>
+					  </div>
+					</div>
+		         </td>
+		         
+		         <!-- US -->
+		         <td ng-if="$parent.$even" ng-repeat="n in [].constructor(5 - epic.end + 1) track by $index"></td>
+		         
+		         <td ng-if="$parent.$odd" ng-repeat="n in [].constructor(epic.start - 1) track by $index"></td>
+		         <td ng-if="$parent.$odd" ng-repeat="sp in epic.sprint">
+		         		<div ng-repeat="us in sp.userStories" ng-class="us.status">
+		         			<a target="_blank" href="{{issue_link_prefix}}{{us.name}}">
+		         				<img src="./img/ico_story.png" alt="US:"/><span ng-style="statusStyle(us.status)">{{us.name}}</span>
+		         			</a><span style="color:black;cursor: default;" title="{{us.summary}}">{{us.summary | limitTo : 25}}</span>
+		         		</div>
+		         </td>
+		         <td ng-if="$parent.$odd" ng-repeat="n in [].constructor(5 - epic.end + 1) track by $index"></td>
+		      </tr>		      
+		      <tr style="background-color:#FFF0AC;">
+		         <td>Outwards Dependencies</td>
+		         <td ng-repeat="sprint in lal.depOutSps">
+		         	<div ng-repeat="us in sprint.dependencies" ng-class="us.status"> 
+		         		<div><span>[{{us.us.component}}]</span>
+		         			<a target="_blank" href="{{issue_link_prefix}}{{us.us.name}}">
+		         				<img src="./img/ico_story.png" alt="US:"/><span ng-style="statusStyle(us.us.status)">{{us.us.name}}</span>
+		         			</a><span style="color:black;cursor: default;" title="{{us.us.summary}}">{{us.us.summary | limitTo : 15}}</span>
+		         		</div>
+		         		<div>
+		         			 -> <span>[{{us.component}}]</span> <a target="_blank" href="{{issue_link_prefix}}{{us.name}}">
+		         				<img src="./img/ico_story.png" alt="US:"/><span ng-style="statusStyle(us.status)">{{us.name}}</span>
+		         			</a><span style="color:black;cursor: default;" title="{{us.summary}}">{{us.summary | limitTo : 8}}</span>
+		         			<img src="./img/no.jpg"/>
+		         		</div>
+	         		</div>
+		         </td>
+		         <td></td>
+		      </tr>
+		      <tr style="background-color:#FFF0AC;">
+		         <td>Inwards Dependencies</td>
+		         <td ng-repeat="sprint in lal.depInSps">
+		         	<div ng-repeat="us in sprint.dependencies" ng-class="us.status"> 
+	         			<div><span>[{{us.component}}]</span>
+		         			<a target="_blank" href="{{issue_link_prefix}}{{us.name}}">
+		         				<img src="./img/ico_story.png" alt="US:"/><span ng-style="statusStyle(us.status)">{{us.name}}</span>
+		         			</a><span style="color:black;cursor: default;" title="{{us.summary}}">{{us.summary | limitTo : 15}}</span>
+		         		</div>
+		         		<div>
+		         			 -> <span>[{{us.us.component}}]</span> <a target="_blank" href="{{issue_link_prefix}}{{us.us.name}}">
+		         				<img src="./img/ico_story.png" alt="US:"/><span ng-style="statusStyle(us.us.status)">{{us.us.name}}</span>
+		         			</a><span style="color:black;cursor: default;" title="{{us.us.summary}}">{{us.us.summary | limitTo : 8}}</span>
+		         			<img src="./img/yes.jpg"/>
+		         		</div>
+	         		</div>
+		         </td>
+		         <td></td>
+		      </tr>
+		      <tr>
+		         <td style="border-bottom-width: 3px;border-bottom-color: #b1181e;">Comments</td>
+		         <td style="border-bottom-width: 3px;border-bottom-color: #b1181e;">
+		         	<div>APPSOL-27183 have some risk</div>
+		         	<div>APPSOL-27184 .....</div>
+		         	<div>APPSOL-27185 .....</div>
+		         	<div><input type="button" value="Add Comments"/></div>
+		         </td>
+				 <td style="border-bottom-width: 3px;border-bottom-color: #b1181e;"></td>
+				 <td style="border-bottom-width: 3px;border-bottom-color: #b1181e;"></td>
+				 <td style="border-bottom-width: 3px;border-bottom-color: #b1181e;"></td>
+				 <td style="border-bottom-width: 3px;border-bottom-color: #b1181e;"></td>
+				 <td style="border-bottom-width: 3px;border-bottom-color: #b1181e;"></td>
+		      </tr>
+	       </tbody>
+		</table>
+	</div>
+	<div class="footer"><span>PROPRIETARY/CONFIDENTIAL - Internal Use Only. Copyright 2016 Veritas Technologies LLC. All rights reserved.</<span></div>
+</body>
+</html>
+
